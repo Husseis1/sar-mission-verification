@@ -3,7 +3,7 @@
 - Customer: Example Coastal Authority (fictional)
 - Analysis window: 2027-05-01 00:00 UTC + 7 days, step 10 s
 - Constellation: 6 satellites in 2 planes
-- Generated: 2026-11-15 11:34 UTC by sarverify 0.1.0
+- Generated: 2026-11-15 11:42 UTC by sarverify 0.1.0
 
 **Acceptance status: MARGINAL**
 
@@ -11,7 +11,7 @@
 
 | ID | Requirement | Method | Criterion | Worst case | Scope | Margin | Status |
 |---|---|---|---|---|---|---|---|
-| MR-COV-001 | Maximum revisit over each area of interest | Analysis | Maximum revisit gap <= 12 h | 9.62 | Gotland Basin | +19.9% | PASS |
+| MR-COV-001 | Maximum revisit over each area of interest | Analysis | Maximum revisit gap <= 12 h | 10.65 | Archipelago Sea | +11.3% | PASS |
 | MR-COV-002 | Mean revisit over each area of interest | Analysis | Mean revisit gap <= 7 h | 6.07 | Gotland Basin | +13.2% | PASS |
 | MR-COV-003 | Imaging opportunities per area of interest | Analysis | Imaging opportunities per day >= 3.5 1/day | 4.00 | Gotland Basin | +14.3% | PASS |
 | MR-LAT-001 | Acquisition-to-delivery latency (P90) | Analysis | 90th percentile delivery latency <= 120 min | 110.37 | Bothnian Bay | +8.0% | MARGINAL |
@@ -28,6 +28,7 @@ Margins below 10% are reported as MARGINAL.
 | Gotland Basin | 4.00 | 6.07 | 9.62 | 108.3 | 100% | 33.4 - 36.3 |
 | Gulf of Riga | 4.00 | 6.07 | 9.61 | 108.4 | 100% | 31.6 - 35.1 |
 | Bothnian Bay | 8.29 | 2.90 | 9.55 | 110.4 | 100% | 15.0 - 45.0 |
+| Archipelago Sea | 5.14 | 4.68 | 10.65 | 109.1 | 100% | 31.1 - 44.8 |
 
 ## 3. Ground segment contacts
 
@@ -66,6 +67,7 @@ Rationale: Vessel tracks older than half a day lose operational value for the cu
 | Gotland Basin | 9.62 | <= 12 h | +19.9% | PASS |
 | Gulf of Riga | 9.61 | <= 12 h | +19.9% | PASS |
 | Bothnian Bay | 9.55 | <= 12 h | +20.4% | PASS |
+| Archipelago Sea | 10.65 | <= 12 h | +11.3% | PASS |
 
 ### MR-COV-002: Mean revisit over each area of interest
 
@@ -78,6 +80,7 @@ Rationale: Supports a three-to-four-times-daily maritime picture.
 | Gotland Basin | 6.07 | <= 7 h | +13.2% | PASS |
 | Gulf of Riga | 6.07 | <= 7 h | +13.2% | PASS |
 | Bothnian Bay | 2.90 | <= 7 h | +58.6% | PASS |
+| Archipelago Sea | 4.68 | <= 7 h | +33.1% | PASS |
 
 ### MR-COV-003: Imaging opportunities per area of interest
 
@@ -90,6 +93,7 @@ Rationale: Tasking flexibility to absorb conflicts between customers and areas.
 | Gotland Basin | 4.00 | >= 3.5 1/day | +14.3% | PASS |
 | Gulf of Riga | 4.00 | >= 3.5 1/day | +14.3% | PASS |
 | Bothnian Bay | 8.29 | >= 3.5 1/day | +136.7% | PASS |
+| Archipelago Sea | 5.14 | >= 3.5 1/day | +46.9% | PASS |
 
 ### MR-LAT-001: Acquisition-to-delivery latency (P90)
 
@@ -102,6 +106,7 @@ Rationale: Near-real-time products for maritime surveillance.
 | Gotland Basin | 108.34 | <= 120 min | +9.7% | MARGINAL |
 | Gulf of Riga | 108.43 | <= 120 min | +9.6% | MARGINAL |
 | Bothnian Bay | 110.37 | <= 120 min | +8.0% | MARGINAL |
+| Archipelago Sea | 109.13 | <= 120 min | +9.1% | MARGINAL |
 
 ### MR-GND-001: Downlink capacity per satellite
 
