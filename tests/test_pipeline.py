@@ -100,3 +100,18 @@ def test_tasking_constraints_remove_conflicting_opportunities(short_config):
     for sat in constrained.satellites:
         times = sorted(a.time_s for a in constrained.accesses if a.satellite == sat)
         assert all(b - a >= 120.0 for a, b in zip(times, times[1:]))
+
+
+def test_phase_offset_applies_to_successive_planes():
+    config = load_config(EXAMPLE).with_plane_phase_offset(30.0)
+    assert config.planes[0].phase_offset_deg == 0.0
+    assert config.planes[1].phase_offset_deg == 30.0
+    assert config.satellites[3].arg_lat_deg == pytest.approx(30.0)
+
+
+def test_best_point_prefers_lower_severity(short_config):
+    from sarverify.trade import best_point, phase_offset_sweep
+
+    points = phase_offset_sweep(short_config, [0.0, 30.0])
+    best = best_point(points)
+    assert best.status.severity == min(p.status.severity for p in points)

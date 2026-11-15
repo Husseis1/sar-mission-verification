@@ -8,7 +8,7 @@ from .config import ConfigError, load_config
 from .degradation import single_satellite_loss
 from .robustness import phasing_monte_carlo
 from .report import build_json, build_markdown, build_traceability_csv, fmt
-from .trade import altitude_sweep, satellites_per_plane_sweep, smallest_compliant
+from .trade import altitude_sweep, best_point, phase_offset_sweep, satellites_per_plane_sweep, smallest_compliant
 from .verify import Status, overall_status, summarize, verify
 
 
@@ -52,7 +52,15 @@ def cmd_run(args) -> int:
 def cmd_trade(args) -> int:
     config = load_config(args.config)
     ids = [r.id for r in config.requirements]
-    if args.altitudes:
+    if args.phase_offsets:
+        points = phase_offset_sweep(config, args.phase_offsets)
+        lines = ["| Plane phase offset (deg) | Status | " + " | ".join(ids) + " |", "|" + "---|" * (len(ids) + 2)]
+        for p in points:
+            cells = [f"{fmt(s.worst.measured)} ({s.status.value})" for s in p.summaries]
+            lines.append(f"| {p.phase_offset_deg:g} | {p.status.value} | " + " | ".join(cells) + " |")
+        best = best_point(points)
+        verdict = f"Best inter-plane phase offset: {best.phase_offset_deg:g} deg"
+    elif args.altitudes:
         points = altitude_sweep(config, args.altitudes)
         lines = ["| Altitude (km) | Status | " + " | ".join(ids) + " |", "|" + "---|" * (len(ids) + 2)]
         for p in points:
@@ -138,6 +146,7 @@ def build_parser() -> argparse.ArgumentParser:
     trade.add_argument("config")
     trade.add_argument("--counts", type=int, nargs="+", default=[1, 2, 3, 4])
     trade.add_argument("--altitudes", type=float, nargs="+", default=None, help="Sweep orbit altitude (km) instead of satellites per plane")
+    trade.add_argument("--phase-offsets", type=float, nargs="+", default=None, help="Sweep the in-plane phase offset between successive planes (deg)")
     trade.add_argument("--out", default=None)
     trade.set_defaults(func=cmd_trade)
     compare = sub.add_parser("compare", help="Compare design options and write a decision memo")

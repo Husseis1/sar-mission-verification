@@ -128,6 +128,10 @@ class MissionConfig:
     def with_satellites_per_plane(self, count: int) -> "MissionConfig":
         return replace(self, planes=tuple(replace(p, satellites=count) for p in self.planes))
 
+    def with_plane_phase_offset(self, offset_deg: float) -> "MissionConfig":
+        planes = tuple(p if i == 0 else replace(p, phase_offset_deg=offset_deg * i) for i, p in enumerate(self.planes))
+        return replace(self, planes=planes)
+
     def with_altitude(self, altitude_km: float) -> "MissionConfig":
         return replace(self, planes=tuple(p.at_altitude(altitude_km) for p in self.planes))
 
