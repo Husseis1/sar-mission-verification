@@ -7,6 +7,7 @@ from .config import MissionConfig
 from .geodesy import eci_to_ecef, gmst_rad
 from .ground import Contact, delivery_latency_s, find_contacts
 from .orbit import Satellite
+from .tasking import schedule_satellite
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,7 @@ class MissionAnalysis:
     satellites: tuple[str, ...]
     accesses: tuple[Access, ...]
     contacts: tuple[Contact, ...]
+    unscheduled: tuple[Access, ...] = ()
 
     @property
     def duration_s(self) -> float:
@@ -27,6 +29,7 @@ class MissionAnalysis:
             satellites=tuple(s for s in self.satellites if s not in lost),
             accesses=tuple(a for a in self.accesses if a.satellite not in lost),
             contacts=tuple(c for c in self.contacts if c.satellite not in lost),
+            unscheduled=tuple(a for a in self.unscheduled if a.satellite not in lost),
         )
 
 
@@ -44,7 +47,9 @@ def run_analysis(config: MissionConfig) -> MissionAnalysis:
     times = time_grid(config)
     downlink_s = config.operations.downlink_duration_min * 60.0
     processing_s = config.operations.processing_min * 60.0
+    ops = config.operations
     accesses: list[Access] = []
+    unscheduled: list[Access] = []
     contacts: list[Contact] = []
     for satellite in config.satellites:
         r_ecef, v_ecef = propagate(satellite, config, times)
@@ -54,15 +59,26 @@ def run_analysis(config: MissionConfig) -> MissionAnalysis:
             for c in find_contacts(satellite.name, times, r_ecef, station, config.operations.min_contact_s)
         ]
         contacts.extend(sat_contacts)
-        for target in config.targets:
-            for access in find_accesses(satellite.name, times, r_ecef, v_ecef, target, config.sensor):
-                latency = delivery_latency_s(access.time_s, sat_contacts, downlink_s, processing_s)
-                accesses.append(replace(access, latency_s=latency))
+        candidates = [
+            access
+            for target in config.targets
+            for access in find_accesses(satellite.name, times, r_ecef, v_ecef, target, config.sensor)
+        ]
+        if ops.constrains_tasking:
+            candidates, rejected = schedule_satellite(
+                candidates, ops.min_acquisition_separation_s, ops.max_acquisitions_per_orbit, satellite.nodal_period_s
+            )
+            unscheduled.extend(rejected)
+        for access in candidates:
+            latency = delivery_latency_s(access.time_s, sat_contacts, downlink_s, processing_s)
+            accesses.append(replace(access, latency_s=latency))
     accesses.sort(key=lambda a: a.time_s)
+    unscheduled.sort(key=lambda a: a.time_s)
     contacts.sort(key=lambda c: c.start_s)
     return MissionAnalysis(
         config=config,
         satellites=tuple(s.name for s in config.satellites),
         accesses=tuple(accesses),
         contacts=tuple(contacts),
+        unscheduled=tuple(unscheduled),
     )

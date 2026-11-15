@@ -61,6 +61,12 @@ class Operations:
     downlink_duration_min: float = 5.0
     processing_min: float = 15.0
     min_contact_s: float = 60.0
+    min_acquisition_separation_s: float = 0.0
+    max_acquisitions_per_orbit: int = 0
+
+    @property
+    def constrains_tasking(self) -> bool:
+        return self.min_acquisition_separation_s > 0 or self.max_acquisitions_per_orbit > 0
 
 
 @dataclass(frozen=True)
@@ -188,6 +194,8 @@ def parse_config(raw: dict) -> MissionConfig:
         downlink_duration_min=float(ops_raw.get("downlink_duration_min", 5.0)),
         processing_min=float(ops_raw.get("processing_min", 15.0)),
         min_contact_s=float(ops_raw.get("min_contact_s", 60.0)),
+        min_acquisition_separation_s=float(ops_raw.get("min_acquisition_separation_s", 0.0)),
+        max_acquisitions_per_orbit=int(ops_raw.get("max_acquisitions_per_orbit", 0)),
     )
     try:
         requirements = tuple(parse_requirement(r) for r in _get(raw, "requirements", "config"))

@@ -81,3 +81,19 @@ def test_altitude_sweep_returns_one_point_per_altitude(short_config):
     points = altitude_sweep(short_config, [500.0, 620.0])
     assert [p.altitude_km for p in points] == [500.0, 620.0]
     assert all(len(p.summaries) == len(short_config.requirements) for p in points)
+
+
+def test_tasking_constraints_remove_conflicting_opportunities(short_config):
+    from dataclasses import replace
+
+    free = run_analysis(short_config)
+    constrained_config = replace(
+        short_config,
+        operations=replace(short_config.operations, min_acquisition_separation_s=120.0, max_acquisitions_per_orbit=2),
+    )
+    constrained = run_analysis(constrained_config)
+    assert len(constrained.accesses) + len(constrained.unscheduled) == len(free.accesses)
+    assert constrained.unscheduled
+    for sat in constrained.satellites:
+        times = sorted(a.time_s for a in constrained.accesses if a.satellite == sat)
+        assert all(b - a >= 120.0 for a, b in zip(times, times[1:]))
