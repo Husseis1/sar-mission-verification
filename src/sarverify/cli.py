@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 from .analysis import run_analysis
+from .compare import build_decision_memo, evaluate_option, recommend
 from .config import ConfigError, load_config
 from .degradation import single_satellite_loss
 from .report import build_json, build_markdown, build_traceability_csv, fmt
@@ -84,6 +85,21 @@ def cmd_trade(args) -> int:
     return 0
 
 
+def cmd_compare(args) -> int:
+    labels = [chr(ord("A") + i) for i in range(len(args.configs))]
+    options = [evaluate_option(label, load_config(path)) for label, path in zip(labels, args.configs)]
+    memo = build_decision_memo(options)
+    for o in options:
+        print(f"Option {o.label}: {o.config.name}: {o.status.value}, {o.count(Status.FAIL)} FAIL, {o.count(Status.MARGINAL)} MARGINAL")
+    best = recommend(options)
+    print(f"Recommended: option {best.label} ({best.config.name})")
+    if args.out:
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "decision_memo.md").write_text(memo, encoding="utf-8")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sarverify", description="Verify SAR mission requirements against a constellation design.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -100,6 +116,10 @@ def build_parser() -> argparse.ArgumentParser:
     trade.add_argument("--altitudes", type=float, nargs="+", default=None, help="Sweep orbit altitude (km) instead of satellites per plane")
     trade.add_argument("--out", default=None)
     trade.set_defaults(func=cmd_trade)
+    compare = sub.add_parser("compare", help="Compare design options and write a decision memo")
+    compare.add_argument("configs", nargs="+", help="Two or more mission configurations")
+    compare.add_argument("--out", default=None)
+    compare.set_defaults(func=cmd_compare)
     return parser
 
 
