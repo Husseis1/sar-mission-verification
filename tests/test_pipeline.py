@@ -67,3 +67,17 @@ def test_cli_writes_report(tmp_path):
     report = (tmp_path / "verification_report.md").read_text()
     assert "Requirements verification matrix" in report
     assert (tmp_path / "verification_results.json").exists()
+
+
+def test_altitude_change_keeps_sun_synchronous_planes():
+    config = load_config(EXAMPLE).with_altitude(620.0)
+    assert all(p.altitude_km == 620.0 for p in config.planes)
+    assert config.planes[0].inclination_deg == pytest.approx(97.87, abs=0.02)
+
+
+def test_altitude_sweep_returns_one_point_per_altitude(short_config):
+    from sarverify.trade import altitude_sweep
+
+    points = altitude_sweep(short_config, [500.0, 620.0])
+    assert [p.altitude_km for p in points] == [500.0, 620.0]
+    assert all(len(p.summaries) == len(short_config.requirements) for p in points)
