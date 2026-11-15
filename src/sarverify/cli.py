@@ -5,7 +5,7 @@ from pathlib import Path
 from .analysis import run_analysis
 from .config import ConfigError, load_config
 from .degradation import single_satellite_loss
-from .report import build_json, build_markdown, fmt
+from .report import build_json, build_markdown, build_traceability_csv, fmt
 from .trade import altitude_sweep, satellites_per_plane_sweep, smallest_compliant
 from .verify import Status, overall_status, summarize, verify
 
@@ -27,6 +27,7 @@ def cmd_run(args) -> int:
     out.mkdir(parents=True, exist_ok=True)
     (out / "verification_report.md").write_text(build_markdown(analysis, summaries, loss), encoding="utf-8")
     (out / "verification_results.json").write_text(build_json(analysis, summaries, loss), encoding="utf-8")
+    (out / "traceability_matrix.csv").write_text(build_traceability_csv(summaries), encoding="utf-8")
     if not args.no_plots:
         from .plots import plot_access_timeline, plot_coverage_map, plot_revisit_distribution
 

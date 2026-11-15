@@ -67,6 +67,9 @@ def test_cli_writes_report(tmp_path):
     report = (tmp_path / "verification_report.md").read_text()
     assert "Requirements verification matrix" in report
     assert (tmp_path / "verification_results.json").exists()
+    rows = (tmp_path / "traceability_matrix.csv").read_text().strip().splitlines()
+    assert rows[0].startswith("requirement_id,")
+    assert len(rows) > len(load_config(EXAMPLE).requirements)
 
 
 def test_altitude_change_keeps_sun_synchronous_planes():

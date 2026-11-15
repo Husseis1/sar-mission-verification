@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 import math
 from datetime import datetime, timezone
@@ -213,3 +215,27 @@ def build_json(analysis, summaries: list[RequirementSummary], loss_cases: list[L
             for c in loss_cases
         ]
     return json.dumps(payload, indent=2)
+
+
+def build_traceability_csv(summaries: list[RequirementSummary]) -> str:
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["requirement_id", "title", "metric", "criterion", "method", "scope", "measured", "unit", "margin_pct", "status", "rationale"])
+    for s in summaries:
+        for r in s.results:
+            writer.writerow(
+                [
+                    s.requirement.id,
+                    s.requirement.title,
+                    s.requirement.metric,
+                    s.requirement.statement,
+                    s.requirement.method,
+                    r.scope,
+                    "" if _num(r.measured) is None else _num(r.measured),
+                    s.requirement.unit,
+                    "" if math.isinf(r.margin) else round(r.margin * 100, 2),
+                    r.status.value,
+                    s.requirement.rationale,
+                ]
+            )
+    return buffer.getvalue()
