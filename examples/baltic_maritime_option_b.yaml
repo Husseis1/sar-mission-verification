@@ -1,5 +1,5 @@
 mission:
-  name: Baltic Maritime Awareness (option B, sovereign ground station)
+  name: Baltic Maritime Awareness, option B (local station)
   customer: Example Coastal Authority (fictional)
   epoch: 2027-05-01T00:00:00Z
   duration_days: 7
@@ -41,6 +41,7 @@ operations:
   downlink_duration_min: 3
   processing_min: 20
   min_contact_s: 240
+  min_acquisition_separation_s: 20
 
 verification:
   marginal_band: 0.10
