@@ -110,10 +110,16 @@ class MissionConfig:
     operations: Operations
     requirements: tuple[Requirement, ...]
     marginal_band: float = 0.1
+    satellite_overrides: tuple[Satellite, ...] | None = None
 
     @property
     def satellites(self) -> tuple[Satellite, ...]:
+        if self.satellite_overrides is not None:
+            return self.satellite_overrides
         return tuple(sat for plane in self.planes for sat in plane.build())
+
+    def with_satellites(self, satellites: tuple[Satellite, ...]) -> "MissionConfig":
+        return replace(self, satellite_overrides=tuple(satellites))
 
     @property
     def duration_s(self) -> float:

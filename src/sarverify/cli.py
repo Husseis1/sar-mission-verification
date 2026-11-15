@@ -6,6 +6,7 @@ from .analysis import run_analysis
 from .compare import build_decision_memo, evaluate_option, recommend
 from .config import ConfigError, load_config
 from .degradation import single_satellite_loss
+from .robustness import phasing_monte_carlo
 from .report import build_json, build_markdown, build_traceability_csv, fmt
 from .trade import altitude_sweep, satellites_per_plane_sweep, smallest_compliant
 from .verify import Status, overall_status, summarize, verify
@@ -100,6 +101,29 @@ def cmd_compare(args) -> int:
     return 0
 
 
+def cmd_robustness(args) -> int:
+    config = load_config(args.config)
+    result = phasing_monte_carlo(config, args.samples, args.phase_sigma, args.raan_sigma, args.seed)
+    lines = [
+        f"# Phasing robustness: {config.name}",
+        "",
+        f"{result.samples} samples, in-plane phase error sigma {result.phase_sigma_deg:g} deg, RAAN error sigma {result.raan_sigma_deg:g} deg.",
+        "",
+        "| Requirement | Criterion | P(compliant) | P10 | P50 | P90 |",
+        "|---|---|---|---|---|---|",
+    ]
+    for s in result.spreads:
+        lines.append(f"| {s.requirement_id} | {s.statement} | {s.compliance_probability * 100:.0f}% | {fmt(s.p10)} | {fmt(s.p50)} | {fmt(s.p90)} |")
+    lines += ["", f"Probability that every requirement is met: {result.all_compliant_probability * 100:.0f}%", ""]
+    text = "\n".join(lines)
+    print(text)
+    if args.out:
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "robustness.md").write_text(text, encoding="utf-8")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sarverify", description="Verify SAR mission requirements against a constellation design.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -120,6 +144,14 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("configs", nargs="+", help="Two or more mission configurations")
     compare.add_argument("--out", default=None)
     compare.set_defaults(func=cmd_compare)
+    robust = sub.add_parser("robustness", help="Monte Carlo over satellite phasing and plane errors")
+    robust.add_argument("config")
+    robust.add_argument("--samples", type=int, default=50)
+    robust.add_argument("--phase-sigma", type=float, default=10.0, help="In-plane phasing error, 1 sigma (deg)")
+    robust.add_argument("--raan-sigma", type=float, default=0.5, help="Plane RAAN error, 1 sigma (deg)")
+    robust.add_argument("--seed", type=int, default=0)
+    robust.add_argument("--out", default=None)
+    robust.set_defaults(func=cmd_robustness)
     return parser
 
 
