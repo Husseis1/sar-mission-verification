@@ -16,7 +16,7 @@ def options():
     return [evaluate_option("A", base), evaluate_option("B", parse_config(raw_b))]
 
 
-def test_local_station_cuts_latency(options):
+def test_local_ground_station_cuts_latency(options):
     a, b = options
     lat_a = next(s for s in a.summaries if s.requirement.metric == "latency_p90_min").worst.measured
     lat_b = next(s for s in b.summaries if s.requirement.metric == "latency_p90_min").worst.measured
