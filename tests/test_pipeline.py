@@ -89,7 +89,7 @@ def test_altitude_sweep_returns_one_point_per_altitude(short_config):
 def test_tasking_constraints_remove_conflicting_opportunities(short_config):
     from dataclasses import replace
 
-    free = run_analysis(short_config)
+    free = run_analysis(replace(short_config, operations=replace(short_config.operations, min_acquisition_separation_s=0.0, max_acquisitions_per_orbit=0)))
     constrained_config = replace(
         short_config,
         operations=replace(short_config.operations, min_acquisition_separation_s=120.0, max_acquisitions_per_orbit=2),

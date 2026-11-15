@@ -26,3 +26,19 @@ def test_greedy_schedule_is_maximal_for_separation():
     times = [0, 50, 100, 150, 200]
     accepted, _ = schedule_satellite(make(times), 60.0, 0, 5000.0)
     assert len(accepted) == 3
+
+
+def test_conflicts_are_resolved_in_favour_of_least_served_target():
+    accesses = [
+        Access("S", "Busy", 0.0, 30.0, "right", 700.0),
+        Access("S", "Starved", 20.0, 30.0, "right", 700.0),
+    ]
+    accepted, rejected = schedule_satellite(accesses, 60.0, 0, 5000.0, served={"Busy": 5})
+    assert [a.target for a in accepted] == ["Starved"]
+    assert [a.target for a in rejected] == ["Busy"]
+
+
+def test_served_counts_are_updated_for_the_next_satellite():
+    served = {}
+    schedule_satellite(make([0, 100]), 60.0, 0, 5000.0, served)
+    assert served == {"T0": 1, "T1": 1}

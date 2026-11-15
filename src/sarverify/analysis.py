@@ -51,6 +51,7 @@ def run_analysis(config: MissionConfig) -> MissionAnalysis:
     accesses: list[Access] = []
     unscheduled: list[Access] = []
     contacts: list[Contact] = []
+    served: dict[str, int] = {}
     for satellite in config.satellites:
         r_ecef, v_ecef = propagate(satellite, config, times)
         sat_contacts = [
@@ -66,7 +67,7 @@ def run_analysis(config: MissionConfig) -> MissionAnalysis:
         ]
         if ops.constrains_tasking:
             candidates, rejected = schedule_satellite(
-                candidates, ops.min_acquisition_separation_s, ops.max_acquisitions_per_orbit, satellite.nodal_period_s
+                candidates, ops.min_acquisition_separation_s, ops.max_acquisitions_per_orbit, satellite.nodal_period_s, served
             )
             unscheduled.extend(rejected)
         for access in candidates:
