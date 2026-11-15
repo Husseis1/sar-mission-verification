@@ -28,10 +28,11 @@ def cmd_run(args) -> int:
     (out / "verification_report.md").write_text(build_markdown(analysis, summaries, loss), encoding="utf-8")
     (out / "verification_results.json").write_text(build_json(analysis, summaries, loss), encoding="utf-8")
     if not args.no_plots:
-        from .plots import plot_access_timeline, plot_revisit_distribution
+        from .plots import plot_access_timeline, plot_coverage_map, plot_revisit_distribution
 
         revisit_req = next((r for r in config.requirements if r.metric == "max_revisit_h"), None)
         plot_access_timeline(analysis, out / "access_timeline.png")
+        plot_coverage_map(analysis, out / "coverage_map.png")
         plot_revisit_distribution(analysis, out / "revisit_gaps.png", revisit_req.threshold if revisit_req else None)
     status = overall_status(summaries)
     width = max(len(s.requirement.id) for s in summaries)
