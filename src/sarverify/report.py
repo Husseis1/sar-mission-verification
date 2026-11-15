@@ -20,7 +20,7 @@ ASSUMPTIONS = (
     "An imaging opportunity is the zero-Doppler (broadside) crossing of a target, accepted when the incidence angle and look side are inside the sensor envelope.",
     "Revisit statistics use gaps between consecutive opportunities inside the analysis window; edge gaps at the window boundaries are excluded.",
     "Delivery latency assumes the acquisition is downlinked in the first contact of the same satellite that can fit the full downlink, followed by fixed ground processing time.",
-    "Tasking conflicts, satellite duty-cycle limits, eclipse power constraints and weather-independent SAR imaging are not modelled; results are an upper bound on opportunities.",
+    "Tasking conflicts are resolved per satellite by a greedy earliest-first scheduler with a minimum separation between acquisitions and an optional per-orbit acquisition budget; customer priorities and power or thermal limits beyond that budget are not modelled.",
 )
 
 
@@ -49,6 +49,17 @@ def _incidence_range(analysis, target: str) -> str:
     return f"{min(values):.1f} - {max(values):.1f}" if values else "n/a"
 
 
+def _tasking_summary(ops) -> str:
+    if not ops.constrains_tasking:
+        return "unconstrained (every geometric opportunity counted)"
+    parts = []
+    if ops.min_acquisition_separation_s > 0:
+        parts.append(f"min {ops.min_acquisition_separation_s:g} s between acquisitions")
+    if ops.max_acquisitions_per_orbit > 0:
+        parts.append(f"max {ops.max_acquisitions_per_orbit} acquisitions per orbit")
+    return ", ".join(parts)
+
+
 def build_markdown(analysis, summaries: list[RequirementSummary], loss_cases: list[LossCase] | None = None) -> str:
     cfg = analysis.config
     status = overall_status(summaries)
@@ -58,6 +69,7 @@ def build_markdown(analysis, summaries: list[RequirementSummary], loss_cases: li
         f"- Customer: {cfg.customer or 'n/a'}",
         f"- Analysis window: {cfg.epoch:%Y-%m-%d %H:%M} UTC + {cfg.duration_days:g} days, step {cfg.step_s:g} s",
         f"- Constellation: {len(analysis.satellites)} satellites in {len(cfg.planes)} planes",
+        f"- Tasking: {_tasking_summary(cfg.operations)}",
         f"- Generated: {datetime.now(timezone.utc):%Y-%m-%d %H:%M} UTC by sarverify {__version__}",
         "",
         f"**Acceptance status: {status.value}**",
@@ -86,11 +98,12 @@ def build_markdown(analysis, summaries: list[RequirementSummary], loss_cases: li
         "## 2. Coverage by area of interest",
         "",
         _table(
-            ["AOI", "Opportunities/day", "Mean revisit (h)", "Max revisit (h)", "P90 latency (min)", "Delivered", "Incidence (deg)"],
+            ["AOI", "Opportunities/day", "Lost to conflicts", "Mean revisit (h)", "Max revisit (h)", "P90 latency (min)", "Delivered", "Incidence (deg)"],
             [
                 [
                     t.name,
                     fmt(daily_access_rate(analysis, t.name)),
+                    str(sum(1 for a in analysis.unscheduled if a.target == t.name)),
                     fmt(mean_revisit_h(analysis, t.name)),
                     fmt(max_revisit_h(analysis, t.name)),
                     fmt(latency_p90_min(analysis, t.name), 1),
