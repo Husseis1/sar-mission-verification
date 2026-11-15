@@ -33,3 +33,13 @@ def test_elevation_of_zenith_and_horizon():
     up = local_up(0.0, 0.0)
     r = np.array([site + 500.0 * up, site + np.array([0.0, 500.0, 0.0])])
     assert np.allclose(elevation_deg(r, site, up), [90.0, 0.0], atol=1e-9)
+
+
+@pytest.mark.parametrize("lat,lon,alt", [(0.0, 0.0, 0.0), (60.17, 24.94, 0.05), (-33.9, 151.2, 560.0), (78.23, 15.41, 0.5)])
+def test_geodetic_round_trip(lat, lon, alt):
+    from sarverify.geodesy import ecef_to_geodetic
+
+    out_lat, out_lon, out_alt = ecef_to_geodetic(geodetic_to_ecef(lat, lon, alt))
+    assert out_lat[0] == pytest.approx(lat, abs=1e-8)
+    assert out_lon[0] == pytest.approx(lon, abs=1e-8)
+    assert out_alt[0] == pytest.approx(alt, abs=1e-6)

@@ -51,3 +51,18 @@ def elevation_deg(r_ecef: np.ndarray, site_ecef: np.ndarray, site_up: np.ndarray
     los = r_ecef - site_ecef
     rng = np.linalg.norm(los, axis=1)
     return np.degrees(np.arcsin(np.clip(los @ site_up / rng, -1.0, 1.0)))
+
+
+def ecef_to_geodetic(r_ecef: np.ndarray, iterations: int = 5) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    r = np.atleast_2d(r_ecef)
+    x, y, z = r[:, 0], r[:, 1], r[:, 2]
+    lon = np.arctan2(y, x)
+    p = np.hypot(x, y)
+    lat = np.arctan2(z, p * (1.0 - WGS84_E2))
+    for _ in range(iterations):
+        n = R_EARTH / np.sqrt(1.0 - WGS84_E2 * np.sin(lat) ** 2)
+        alt = p / np.cos(lat) - n
+        lat = np.arctan2(z, p * (1.0 - WGS84_E2 * n / (n + alt)))
+    n = R_EARTH / np.sqrt(1.0 - WGS84_E2 * np.sin(lat) ** 2)
+    alt = p / np.cos(lat) - n
+    return np.degrees(lat), np.degrees(lon), alt
