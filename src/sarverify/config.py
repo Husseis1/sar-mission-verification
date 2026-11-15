@@ -71,6 +71,11 @@ class PlaneSpec:
     raan_deg: float
     satellites: int
     phase_offset_deg: float = 0.0
+    sun_synchronous: bool = False
+
+    def at_altitude(self, altitude_km: float) -> "PlaneSpec":
+        inclination = sso_inclination_deg(altitude_km) if self.sun_synchronous else self.inclination_deg
+        return replace(self, altitude_km=altitude_km, inclination_deg=inclination)
 
     def build(self) -> tuple[Satellite, ...]:
         return tuple(
@@ -111,6 +116,9 @@ class MissionConfig:
     def with_satellites_per_plane(self, count: int) -> "MissionConfig":
         return replace(self, planes=tuple(replace(p, satellites=count) for p in self.planes))
 
+    def with_altitude(self, altitude_km: float) -> "MissionConfig":
+        return replace(self, planes=tuple(p.at_altitude(altitude_km) for p in self.planes))
+
 
 def _get(raw: dict, key: str, where: str):
     if key not in raw:
@@ -130,8 +138,8 @@ def _parse_epoch(value) -> datetime:
 def _parse_plane(raw: dict, index: int) -> PlaneSpec:
     where = f"constellation.planes[{index}]"
     altitude = float(_get(raw, "altitude_km", where))
-    inclination = raw.get("inclination_deg", "sso")
-    inclination = sso_inclination_deg(altitude) if inclination == "sso" else float(inclination)
+    sun_synchronous = raw.get("inclination_deg", "sso") == "sso"
+    inclination = sso_inclination_deg(altitude) if sun_synchronous else float(raw["inclination_deg"])
     count = int(_get(raw, "satellites", where))
     if count < 1:
         raise ConfigError(f"{where}: satellites must be at least 1")
@@ -142,6 +150,7 @@ def _parse_plane(raw: dict, index: int) -> PlaneSpec:
         raan_deg=float(raw.get("raan_deg", 0.0)),
         satellites=count,
         phase_offset_deg=float(raw.get("phase_offset_deg", 0.0)),
+        sun_synchronous=sun_synchronous,
     )
 
 

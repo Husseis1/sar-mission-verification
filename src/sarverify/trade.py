@@ -11,16 +11,27 @@ class TradePoint:
     total_satellites: int
     status: Status
     summaries: tuple[RequirementSummary, ...]
+    altitude_km: float = 0.0
+
+
+def _evaluate(variant: MissionConfig) -> TradePoint:
+    analysis = run_analysis(variant)
+    summaries = summarize(verify(analysis, variant.requirements, variant.marginal_band))
+    return TradePoint(
+        satellites_per_plane=variant.planes[0].satellites,
+        total_satellites=len(variant.satellites),
+        status=overall_status(summaries),
+        summaries=tuple(summaries),
+        altitude_km=variant.planes[0].altitude_km,
+    )
 
 
 def satellites_per_plane_sweep(config: MissionConfig, counts: list[int]) -> list[TradePoint]:
-    points = []
-    for count in counts:
-        variant = config.with_satellites_per_plane(count)
-        analysis = run_analysis(variant)
-        summaries = summarize(verify(analysis, variant.requirements, variant.marginal_band))
-        points.append(TradePoint(count, len(variant.satellites), overall_status(summaries), tuple(summaries)))
-    return points
+    return [_evaluate(config.with_satellites_per_plane(count)) for count in counts]
+
+
+def altitude_sweep(config: MissionConfig, altitudes_km: list[float]) -> list[TradePoint]:
+    return [_evaluate(config.with_altitude(altitude)) for altitude in altitudes_km]
 
 
 def smallest_compliant(points: list[TradePoint]) -> TradePoint | None:

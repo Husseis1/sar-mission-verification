@@ -6,7 +6,7 @@ from .analysis import run_analysis
 from .config import ConfigError, load_config
 from .degradation import single_satellite_loss
 from .report import build_json, build_markdown, fmt
-from .trade import satellites_per_plane_sweep, smallest_compliant
+from .trade import altitude_sweep, satellites_per_plane_sweep, smallest_compliant
 from .verify import Status, overall_status, summarize, verify
 
 
@@ -47,19 +47,32 @@ def cmd_run(args) -> int:
 
 def cmd_trade(args) -> int:
     config = load_config(args.config)
-    points = satellites_per_plane_sweep(config, args.counts)
     ids = [r.id for r in config.requirements]
-    lines = ["| Sats/plane | Total | Status | " + " | ".join(ids) + " |", "|" + "---|" * (len(ids) + 3)]
-    for p in points:
-        cells = [f"{fmt(s.worst.measured)} ({s.status.value})" for s in p.summaries]
-        lines.append(f"| {p.satellites_per_plane} | {p.total_satellites} | {p.status.value} | " + " | ".join(cells) + " |")
+    if args.altitudes:
+        points = altitude_sweep(config, args.altitudes)
+        lines = ["| Altitude (km) | Status | " + " | ".join(ids) + " |", "|" + "---|" * (len(ids) + 2)]
+        for p in points:
+            cells = [f"{fmt(s.worst.measured)} ({s.status.value})" for s in p.summaries]
+            lines.append(f"| {p.altitude_km:g} | {p.status.value} | " + " | ".join(cells) + " |")
+        compliant = [p.altitude_km for p in points if p.status is not Status.FAIL]
+        verdict = (
+            f"Compliant altitudes: {', '.join(f'{a:g}' for a in compliant)} km"
+            if compliant
+            else "No swept altitude meets all requirements"
+        )
+    else:
+        points = satellites_per_plane_sweep(config, args.counts)
+        lines = ["| Sats/plane | Total | Status | " + " | ".join(ids) + " |", "|" + "---|" * (len(ids) + 3)]
+        for p in points:
+            cells = [f"{fmt(s.worst.measured)} ({s.status.value})" for s in p.summaries]
+            lines.append(f"| {p.satellites_per_plane} | {p.total_satellites} | {p.status.value} | " + " | ".join(cells) + " |")
+        best = smallest_compliant(points)
+        verdict = (
+            f"Smallest compliant constellation: {best.satellites_per_plane} per plane ({best.total_satellites} satellites)"
+            if best
+            else "No swept configuration meets all requirements"
+        )
     table = "\n".join(lines)
-    best = smallest_compliant(points)
-    verdict = (
-        f"Smallest compliant constellation: {best.satellites_per_plane} per plane ({best.total_satellites} satellites)"
-        if best
-        else "No swept configuration meets all requirements"
-    )
     print(table)
     print(verdict)
     if args.out:
@@ -82,6 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
     trade = sub.add_parser("trade", help="Sweep satellites per plane and compare compliance")
     trade.add_argument("config")
     trade.add_argument("--counts", type=int, nargs="+", default=[1, 2, 3, 4])
+    trade.add_argument("--altitudes", type=float, nargs="+", default=None, help="Sweep orbit altitude (km) instead of satellites per plane")
     trade.add_argument("--out", default=None)
     trade.set_defaults(func=cmd_trade)
     return parser
