@@ -1,0 +1,27 @@
+requirement_id,title,metric,criterion,method,scope,measured,unit,margin_pct,status,rationale
+MR-COV-001,Maximum revisit over each area of interest,max_revisit_h,Maximum revisit gap <= 12 h,Analysis,Gulf of Finland,9.1976,h,23.35,PASS,Vessel tracks older than half a day lose operational value for the customer.
+MR-COV-001,Maximum revisit over each area of interest,max_revisit_h,Maximum revisit gap <= 12 h,Analysis,Gotland Basin,10.2752,h,14.37,PASS,Vessel tracks older than half a day lose operational value for the customer.
+MR-COV-001,Maximum revisit over each area of interest,max_revisit_h,Maximum revisit gap <= 12 h,Analysis,Gulf of Riga,9.7433,h,18.81,PASS,Vessel tracks older than half a day lose operational value for the customer.
+MR-COV-001,Maximum revisit over each area of interest,max_revisit_h,Maximum revisit gap <= 12 h,Analysis,Bothnian Bay,9.6828,h,19.31,PASS,Vessel tracks older than half a day lose operational value for the customer.
+MR-COV-001,Maximum revisit over each area of interest,max_revisit_h,Maximum revisit gap <= 12 h,Analysis,Aland and Archipelago Sea,9.7226,h,18.98,PASS,Vessel tracks older than half a day lose operational value for the customer.
+MR-COV-002,Mean revisit over each area of interest,mean_revisit_h,Mean revisit gap <= 7 h,Analysis,Gulf of Finland,4.1024,h,41.39,PASS,Supports a three-to-four-times-daily maritime picture.
+MR-COV-002,Mean revisit over each area of interest,mean_revisit_h,Mean revisit gap <= 7 h,Analysis,Gotland Basin,4.8419,h,30.83,PASS,Supports a three-to-four-times-daily maritime picture.
+MR-COV-002,Mean revisit over each area of interest,mean_revisit_h,Mean revisit gap <= 7 h,Analysis,Gulf of Riga,4.8264,h,31.05,PASS,Supports a three-to-four-times-daily maritime picture.
+MR-COV-002,Mean revisit over each area of interest,mean_revisit_h,Mean revisit gap <= 7 h,Analysis,Bothnian Bay,2.8384,h,59.45,PASS,Supports a three-to-four-times-daily maritime picture.
+MR-COV-002,Mean revisit over each area of interest,mean_revisit_h,Mean revisit gap <= 7 h,Analysis,Aland and Archipelago Sea,3.5027,h,49.96,PASS,Supports a three-to-four-times-daily maritime picture.
+MR-COV-003,Imaging opportunities per area of interest,daily_access_rate,Imaging opportunities per day >= 3.5 1/day,Analysis,Gulf of Finland,5.8571,1/day,67.35,PASS,Tasking flexibility to absorb conflicts between customers and areas.
+MR-COV-003,Imaging opportunities per area of interest,daily_access_rate,Imaging opportunities per day >= 3.5 1/day,Analysis,Gotland Basin,5.0,1/day,42.86,PASS,Tasking flexibility to absorb conflicts between customers and areas.
+MR-COV-003,Imaging opportunities per area of interest,daily_access_rate,Imaging opportunities per day >= 3.5 1/day,Analysis,Gulf of Riga,5.0,1/day,42.86,PASS,Tasking flexibility to absorb conflicts between customers and areas.
+MR-COV-003,Imaging opportunities per area of interest,daily_access_rate,Imaging opportunities per day >= 3.5 1/day,Analysis,Bothnian Bay,8.4286,1/day,140.82,PASS,Tasking flexibility to absorb conflicts between customers and areas.
+MR-COV-003,Imaging opportunities per area of interest,daily_access_rate,Imaging opportunities per day >= 3.5 1/day,Analysis,Aland and Archipelago Sea,6.8571,1/day,95.92,PASS,Tasking flexibility to absorb conflicts between customers and areas.
+MR-LAT-001,Acquisition-to-delivery latency (P90),latency_p90_min,90th percentile delivery latency <= 120 min,Analysis,Gulf of Finland,23.0,min,80.83,PASS,Near-real-time products for maritime surveillance.
+MR-LAT-001,Acquisition-to-delivery latency (P90),latency_p90_min,90th percentile delivery latency <= 120 min,Analysis,Gotland Basin,23.0,min,80.83,PASS,Near-real-time products for maritime surveillance.
+MR-LAT-001,Acquisition-to-delivery latency (P90),latency_p90_min,90th percentile delivery latency <= 120 min,Analysis,Gulf of Riga,23.0,min,80.83,PASS,Near-real-time products for maritime surveillance.
+MR-LAT-001,Acquisition-to-delivery latency (P90),latency_p90_min,90th percentile delivery latency <= 120 min,Analysis,Bothnian Bay,23.0,min,80.83,PASS,Near-real-time products for maritime surveillance.
+MR-LAT-001,Acquisition-to-delivery latency (P90),latency_p90_min,90th percentile delivery latency <= 120 min,Analysis,Aland and Archipelago Sea,23.0,min,80.83,PASS,Near-real-time products for maritime surveillance.
+MR-GND-001,Downlink capacity per satellite,daily_contact_min,Ground contact time per day >= 60 min,Analysis,SSO-A-1,241.1429,min,301.9,PASS,Daily data volume must be downlinked without onboard backlog.
+MR-GND-001,Downlink capacity per satellite,daily_contact_min,Ground contact time per day >= 60 min,Analysis,SSO-A-2,240.5238,min,300.87,PASS,Daily data volume must be downlinked without onboard backlog.
+MR-GND-001,Downlink capacity per satellite,daily_contact_min,Ground contact time per day >= 60 min,Analysis,SSO-A-3,252.0238,min,320.04,PASS,Daily data volume must be downlinked without onboard backlog.
+MR-GND-001,Downlink capacity per satellite,daily_contact_min,Ground contact time per day >= 60 min,Analysis,SSO-B-1,248.1905,min,313.65,PASS,Daily data volume must be downlinked without onboard backlog.
+MR-GND-001,Downlink capacity per satellite,daily_contact_min,Ground contact time per day >= 60 min,Analysis,SSO-B-2,241.4762,min,302.46,PASS,Daily data volume must be downlinked without onboard backlog.
+MR-GND-001,Downlink capacity per satellite,daily_contact_min,Ground contact time per day >= 60 min,Analysis,SSO-B-3,243.8095,min,306.35,PASS,Daily data volume must be downlinked without onboard backlog.
