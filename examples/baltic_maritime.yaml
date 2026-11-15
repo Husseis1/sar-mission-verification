@@ -1,0 +1,76 @@
+mission:
+  name: Baltic Maritime Awareness
+  customer: Example Coastal Authority (fictional)
+  epoch: 2027-05-01T00:00:00Z
+  duration_days: 7
+  step_s: 10
+
+constellation:
+  planes:
+    - name: SSO-A
+      altitude_km: 560
+      inclination_deg: sso
+      raan_deg: 0
+      satellites: 3
+    - name: SSO-B
+      altitude_km: 560
+      inclination_deg: sso
+      raan_deg: 60
+      satellites: 3
+      phase_offset_deg: 60
+
+sensor:
+  incidence_min_deg: 15
+  incidence_max_deg: 45
+  look_sides: [right, left]
+
+targets:
+  - { name: Gulf of Finland, lat_deg: 59.90, lon_deg: 25.50 }
+  - { name: Aland Sea, lat_deg: 60.10, lon_deg: 19.30 }
+  - { name: Gotland Basin, lat_deg: 57.30, lon_deg: 19.80 }
+  - { name: Gulf of Riga, lat_deg: 57.70, lon_deg: 23.60 }
+  - { name: Bothnian Bay, lat_deg: 65.00, lon_deg: 23.50 }
+
+ground_stations:
+  - { name: Svalbard, lat_deg: 78.23, lon_deg: 15.41, min_elevation_deg: 5 }
+  - { name: Inuvik, lat_deg: 68.36, lon_deg: -133.72, min_elevation_deg: 5 }
+
+operations:
+  downlink_duration_min: 3
+  processing_min: 20
+  min_contact_s: 240
+
+verification:
+  marginal_band: 0.10
+
+requirements:
+  - id: MR-COV-001
+    title: Maximum revisit over each area of interest
+    metric: max_revisit_h
+    comparator: "<="
+    threshold: 12
+    rationale: Vessel tracks older than half a day lose operational value for the customer.
+  - id: MR-COV-002
+    title: Mean revisit over each area of interest
+    metric: mean_revisit_h
+    comparator: "<="
+    threshold: 7
+    rationale: Supports a three-to-four-times-daily maritime picture.
+  - id: MR-COV-003
+    title: Imaging opportunities per area of interest
+    metric: daily_access_rate
+    comparator: ">="
+    threshold: 3.5
+    rationale: Tasking flexibility to absorb conflicts between customers and areas.
+  - id: MR-LAT-001
+    title: Acquisition-to-delivery latency (P90)
+    metric: latency_p90_min
+    comparator: "<="
+    threshold: 120
+    rationale: Near-real-time products for maritime surveillance.
+  - id: MR-GND-001
+    title: Downlink capacity per satellite
+    metric: daily_contact_min
+    comparator: ">="
+    threshold: 60
+    rationale: Daily data volume must be downlinked without onboard backlog.
