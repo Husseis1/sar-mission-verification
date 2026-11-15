@@ -30,6 +30,7 @@ targets:
   - { name: Gotland Basin, lat_deg: 57.30, lon_deg: 19.80 }
   - { name: Gulf of Riga, lat_deg: 57.70, lon_deg: 23.60 }
   - { name: Bothnian Bay, lat_deg: 65.00, lon_deg: 23.50 }
+  - { name: Archipelago Sea, lat_deg: 60.25, lon_deg: 21.40 }
 
 ground_stations:
   - { name: Svalbard, lat_deg: 78.23, lon_deg: 15.41, min_elevation_deg: 5 }
