@@ -18,16 +18,17 @@ The goal is the part of mission delivery between "contract signed" and "mission 
 pip install -e ".[dev]"
 sarverify run examples/baltic_maritime.yaml --out reports
 sarverify trade examples/baltic_maritime.yaml --counts 2 3 4 5
+sarverify trade examples/baltic_maritime.yaml --altitudes 500 560 620 700
 pytest
 ```
 
 ## Example: Baltic maritime surveillance
 
-The example in [`examples/baltic_maritime.yaml`](examples/baltic_maritime.yaml) is a fictional customer that wants a maritime picture over five Baltic Sea areas, served by six SAR satellites in two sun-synchronous planes at 560 km and two polar ground stations (Svalbard and Inuvik).
+The example in [`examples/baltic_maritime.yaml`](examples/baltic_maritime.yaml) is a fictional customer that wants a maritime picture over six Baltic Sea areas, served by six SAR satellites in two sun-synchronous planes at 560 km and two polar ground stations (Svalbard and Inuvik).
 
 ```
-Baltic Maritime Awareness: 6 satellites, 212 opportunities, 938 contacts
-  MR-COV-001  PASS      worst 9.62 h at Gotland Basin
+Baltic Maritime Awareness: 6 satellites, 248 opportunities, 938 contacts
+  MR-COV-001  PASS      worst 10.65 h at Archipelago Sea
   MR-COV-002  PASS      worst 6.07 h at Gotland Basin
   MR-COV-003  PASS      worst 4.00 1/day at Gotland Basin
   MR-LAT-001  MARGINAL  worst 110.37 min at Bothnian Bay
@@ -42,15 +43,28 @@ Full report: [`docs/example_output/verification_report.md`](docs/example_output/
 
 ### What the analysis tells a program team
 
-1. **Coverage is compliant but has no redundancy.** Revisit has about 13-20% margin, but losing any single satellite breaks the coverage requirements. That is a schedule and risk item: an on-orbit spare or a launch slot for a replacement should be in the risk register before acceptance.
+1. **Coverage is compliant but has no redundancy.** Revisit has about 11-14% margin, but losing any single satellite breaks the coverage requirements. That is a schedule and risk item: an on-orbit spare or a launch slot for a replacement should be in the risk register before acceptance.
 2. **Latency is the real risk.** P90 latency is 110 min against a 120 min requirement (8% margin, reported MARGINAL). The cause is ground segment geometry, not the satellites: images taken over the Baltic wait for the next Svalbard or Inuvik pass.
 3. **The fix is cheaper on the ground than in orbit.** [`examples/baltic_maritime_local_station.yaml`](examples/baltic_maritime_local_station.yaml) adds one station in southern Finland. P90 latency drops from 110 min to 23 min and the mission passes with every requirement above margin. The trade study shows that adding satellites does not move latency at all:
 
 | Sats/plane | Total | Status | Max revisit (h) | Mean revisit (h) | Opportunities/day | P90 latency (min) |
 |---|---|---|---|---|---|---|
 | 2 | 4 | FAIL | 23.20 | 10.26 | 2.43 | 110.36 |
-| 3 | 6 | MARGINAL | 9.62 | 6.07 | 4.00 | 110.37 |
+| 3 | 6 | MARGINAL | 10.65 | 6.07 | 4.00 | 110.37 |
 | 4 | 8 | MARGINAL | 9.29 | 2.99 | 8.00 | 110.39 |
+
+4. **560 km is a poor altitude for this customer.** At 560 km a sun-synchronous satellite makes 15.00 revolutions per day, so it is almost exactly a one-day repeat orbit: every day the constellation flies the same ground tracks, and an area that falls between tracks stays between them. Gotland Basin and the Gulf of Riga get only 4 opportunities per day. Moving the same six satellites to 620 km (14.81 rev/day) breaks the resonance, tracks drift from day to day, and the worst area gets 7 opportunities per day with mean revisit falling from 6.1 h to 3.4 h. The cost is slightly worse latency and a higher launch energy, which is the conversation to have with the customer:
+
+```bash
+sarverify trade examples/baltic_maritime.yaml --altitudes 500 560 620 700
+```
+
+| Altitude (km) | Rev/day | Max revisit (h) | Mean revisit (h) | Opportunities/day (worst AOI) | P90 latency (min) |
+|---|---|---|---|---|---|
+| 500 | 15.20 | 10.53 | 4.31 | 5.57 | 109.5 |
+| 560 | 15.00 | 10.65 | 6.07 | 4.00 | 110.4 |
+| 620 | 14.81 | 9.74 | 3.44 | 7.00 | 111.2 |
+| 700 | 14.56 | 9.90 | 3.24 | 7.43 | 112.4 |
 
 ## How it works
 
@@ -81,7 +95,7 @@ mission.yaml ──► config ──► orbit propagation (J2) ──► ECEF po
 | `metrics.py` | Registry of verifiable metrics (revisit, access rate, latency, contact time) |
 | `verify.py` | Margin computation, PASS / MARGINAL / FAIL classification, worst-case summary |
 | `degradation.py` | Re-verification with each satellite removed |
-| `trade.py` | Constellation size sweep |
+| `trade.py` | Constellation size and orbit altitude sweeps |
 | `report.py`, `plots.py`, `cli.py` | Outputs and command line |
 
 ### Modelling choices
